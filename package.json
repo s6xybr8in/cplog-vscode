@@ -1,0 +1,135 @@
+{
+  "name": "cplog-vscode",
+  "displayName": "CP-Log To Solve",
+  "description": "CP-Log의 To Solve 목록을 VS Code 사이드바에서 봅니다",
+  "version": "0.1.0",
+  "publisher": "s6xybr8in",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/s6xybr8in/cplog-vscode.git"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": ["Other"],
+  "keywords": ["competitive programming", "codeforces", "atcoder", "cp-log"],
+  "main": "./extension.js",
+  "activationEvents": ["onStartupFinished"],
+  "scripts": {
+    "test": "node --test \"test/*.test.mjs\"",
+    "test:integration": "node test/runIntegration.mjs",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@vscode/test-electron": "^2.4.1",
+    "@vscode/vsce": "^3.2.1",
+    "mocha": "^10.8.2"
+  },
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "cplog",
+          "title": "CP-Log",
+          "icon": "media/cplog.svg"
+        }
+      ]
+    },
+    "views": {
+      "cplog": [
+        {
+          "id": "cplogToSolve",
+          "name": "To Solve"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "cplogToSolve",
+        "contents": "CP-Log 데이터 리포에 연결하면 풀어야 할 문제 목록이 여기에 표시됩니다.\n[초기 설정](command:cplog.setup)\n앱 설정에서 데이터 저장소 동기화가 켜져 있어야 합니다.",
+        "when": "!cplog.configured"
+      }
+    ],
+    "commands": [
+      {
+        "command": "cplog.refresh",
+        "title": "새로고침",
+        "category": "CP-Log",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "cplog.toggleShowDone",
+        "title": "해결한 문제 표시 전환",
+        "category": "CP-Log",
+        "icon": "$(eye)"
+      },
+      {
+        "command": "cplog.setup",
+        "title": "초기 설정",
+        "category": "CP-Log"
+      },
+      {
+        "command": "cplog.setToken",
+        "title": "GitHub 토큰 설정",
+        "category": "CP-Log"
+      },
+      {
+        "command": "cplog.openProblem",
+        "title": "문제 열기",
+        "category": "CP-Log"
+      },
+      {
+        "command": "cplog.copyProblemName",
+        "title": "문제 이름 복사",
+        "category": "CP-Log"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        { "command": "cplog.openProblem", "when": "false" },
+        { "command": "cplog.copyProblemName", "when": "false" }
+      ],
+      "view/title": [
+        { "command": "cplog.toggleShowDone", "when": "view == cplogToSolve", "group": "navigation@1" },
+        { "command": "cplog.refresh", "when": "view == cplogToSolve", "group": "navigation@2" },
+        { "command": "cplog.setup", "when": "view == cplogToSolve", "group": "1_config" }
+      ],
+      "view/item/context": [
+        { "command": "cplog.openProblem", "when": "view == cplogToSolve && viewItem == cplogProblem", "group": "inline" },
+        { "command": "cplog.copyProblemName", "when": "view == cplogToSolve && viewItem == cplogProblem" }
+      ]
+    },
+    "configuration": {
+      "title": "CP-Log",
+      "properties": {
+        "cplog.username": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "GitHub 사용자명."
+        },
+        "cplog.dataRepo": {
+          "type": "string",
+          "default": "cplog-data",
+          "markdownDescription": "`problems.json`이 있는 데이터 리포 이름. CP-Log 앱 설정의 데이터 저장소와 같아야 합니다."
+        },
+        "cplog.dataBranch": {
+          "type": "string",
+          "default": "main",
+          "markdownDescription": "데이터 리포의 브랜치."
+        },
+        "cplog.showDone": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "해결한 문제도 목록에 표시합니다."
+        },
+        "cplog.refreshMinutes": {
+          "type": "number",
+          "default": 10,
+          "minimum": 0,
+          "markdownDescription": "자동 새로고침 주기(분). `0`이면 수동으로만 새로고침합니다."
+        }
+      }
+    }
+  }
+}

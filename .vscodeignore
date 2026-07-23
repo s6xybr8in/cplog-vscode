@@ -1,0 +1,7 @@
+.vscode-test/**
+test/**
+node_modules/**
+PLAN.md
+.gitignore
+.vscodeignore
+*.vsix
