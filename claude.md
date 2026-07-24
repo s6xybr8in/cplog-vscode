@@ -88,14 +88,14 @@ npm run package          # cplog-vscode-0.1.0.vsix 생성
 > **Windows 함정**: 3단계가 `Code is currently being updated`로 실패하면 VS Code 업데이트 설치 프로그램(`CodeSetup-*.exe`)이 떠 있는 것이다. 전역 뮤텍스를 잡고 있어 테스트용 VS Code도 뜨지 못한다 — VS Code를 모두 닫아 업데이트를 끝낸 뒤 재실행.
 
 ## 📦 배포 상태
-- **로컬 커밋 1개**(`f1d7898`), **원격 리포 없음** — `gh repo create`는 되돌리기 번거로운 외부 동작이라 공개/비공개를 확인받고 진행하기로 미뤄둠. `package.json`의 `repository.url`은 `https://github.com/s6xybr8in/cplog-vscode.git`로 미리 적어둔 상태.
+- **원격 리포 공개 완료** (2026-07-24) — <https://github.com/s6xybr8in/cplog-vscode> (public, 기본 브랜치 `main`). `origin/main`에 3개 커밋 푸시됨. `package.json`의 `repository.url`과 실제 리포 주소가 일치한다.
 - **Marketplace 미퍼블리시** — publisher 계정이 필요해 로컬 `.vsix`까지만. 설치는 `code --install-extension cplog-vscode-0.1.0.vsix`.
 - **설치는 사용자 환경을 바꾸므로** 에이전트가 임의로 실행하지 말 것 — `.vsix` 생성까지만 하고 설치 여부는 물어본다.
 
 ## 🚧 다음 작업 / 범위 밖
 **다음 작업 후보**
-- 원격 GitHub 리포 생성 + 푸시 (공개/비공개 확인 필요)
 - 실데이터 확인 — 실제 `cplog-data`에 PAT을 물려 앱과 같은 순서로 뜨는지 다크/라이트 스크린샷
+- 릴리스 — `.vsix`를 GitHub Releases에 올려 `code --install-extension`으로 받게 하기
 
 **명시적 범위 밖**
 - 상태 변경·문제 추가 등 **쓰기** (위 기술 제약 참고)
