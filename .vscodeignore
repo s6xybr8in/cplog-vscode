@@ -1,5 +1,6 @@
 .vscode/**
 .vscode-test/**
+.omc/**
 test/**
 node_modules/**
 PLAN.md
