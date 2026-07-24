@@ -103,13 +103,15 @@ counts {"total":42,"todo":21,"done":21,"reviewDue":2}  flat:false
 
 ## 📦 배포 상태
 - **원격 리포 공개 완료** (2026-07-24) — <https://github.com/s6xybr8in/cplog-vscode> (public, 기본 브랜치 `main`). `origin/main`에 3개 커밋 푸시됨. `package.json`의 `repository.url`과 실제 리포 주소가 일치한다.
-- **Marketplace 미퍼블리시** — publisher 계정이 필요해 로컬 `.vsix`까지만. 설치는 `code --install-extension cplog-vscode-0.1.0.vsix`.
+- **v0.1.0 릴리스 완료** (2026-07-24) — <https://github.com/s6xybr8in/cplog-vscode/releases/tag/v0.1.0>에 `cplog-vscode-0.1.0.vsix` 첨부. 태그 `v0.1.0`. 다음 릴리스는 `package.json` 버전을 올리고 `npm run package` → `gh release create vX.Y.Z <vsix>`.
+- **Marketplace 미퍼블리시** — publisher 계정이 필요해 `.vsix` 배포까지만. 설치는 `code --install-extension cplog-vscode-0.1.0.vsix`.
 - **설치는 사용자 환경을 바꾸므로** 에이전트가 임의로 실행하지 말 것 — `.vsix` 생성까지만 하고 설치 여부는 물어본다.
+- **`.vsix`에 들어가는 건 10개 파일뿐** — `extension.js`, `package.json`, `readme.md`, `LICENSE.txt`, `media/cplog.svg`, `src/*.js` 3개. `test/`·`claude.md`·`PLAN.md`·`.omc/`는 `.vscodeignore`로 제외된다.
 
 ## 🚧 다음 작업 / 범위 밖
 **다음 작업 후보**
 - 실데이터 UI 확인 — 데이터 계약은 위 "실데이터 대조"로 검증됐고, **남은 건 실제 화면**(F5 확장 개발 호스트에 읽기 전용 PAT을 물려 다크/라이트 스크린샷). PAT 발급이 필요해 에이전트가 대신 못 한다.
-- 릴리스 — `.vsix`를 GitHub Releases에 올려 `code --install-extension`으로 받게 하기
+- README 보강 — 공개 리포가 됐으니 처음 보는 사람 기준으로 다듬기(스크린샷 자리 비어 있음)
 
 **명시적 범위 밖**
 - 상태 변경·문제 추가 등 **쓰기** (위 기술 제약 참고)
