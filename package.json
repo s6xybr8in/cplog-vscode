@@ -2,7 +2,7 @@
   "name": "cplog-vscode",
   "displayName": "CP-Log To Solve",
   "description": "CP-Log의 To Solve 목록을 VS Code 사이드바에서 봅니다",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "publisher": "s6xybr8in",
   "license": "MIT",
   "repository": {
@@ -14,6 +14,11 @@
   },
   "categories": ["Other"],
   "keywords": ["competitive programming", "codeforces", "atcoder", "cp-log"],
+  "icon": "media/icon.png",
+  "galleryBanner": {
+    "color": "#249E96",
+    "theme": "dark"
+  },
   "main": "./extension.js",
   "activationEvents": ["onStartupFinished"],
   "scripts": {
