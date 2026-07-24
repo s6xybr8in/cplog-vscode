@@ -103,10 +103,11 @@ counts {"total":42,"todo":21,"done":21,"reviewDue":2}  flat:false
 
 ## 📦 배포 상태
 - **원격 리포 공개 완료** (2026-07-24) — <https://github.com/s6xybr8in/cplog-vscode> (public, 기본 브랜치 `main`). `origin/main`에 3개 커밋 푸시됨. `package.json`의 `repository.url`과 실제 리포 주소가 일치한다.
-- **v0.1.0 릴리스 완료** (2026-07-24) — <https://github.com/s6xybr8in/cplog-vscode/releases/tag/v0.1.0>에 `cplog-vscode-0.1.0.vsix` 첨부. 태그 `v0.1.0`. 다음 릴리스는 `package.json` 버전을 올리고 `npm run package` → `gh release create vX.Y.Z <vsix>`.
-- **Marketplace 미퍼블리시** — publisher 계정이 필요해 `.vsix` 배포까지만. 설치는 `code --install-extension cplog-vscode-0.1.0.vsix`.
+- **최신 릴리스 v0.1.1** (2026-07-24) — <https://github.com/s6xybr8in/cplog-vscode/releases>. v0.1.0(첫 릴리스)과 v0.1.1(문서만 갱신, 코드 동일) 둘 다 살아 있다.
+- **릴리스 절차**: `package.json` 버전 ↑ → `npm install --package-lock-only`(락파일 동기화) → `CHANGELOG.md` 항목 추가 → `npm test` → `npm run package` → `gh release create vX.Y.Z cplog-vscode-X.Y.Z.vsix`. README 안의 `.vsix` 파일명도 같이 바꿔야 한다.
+- **Marketplace 미퍼블리시** — publisher 계정이 필요해 `.vsix` 배포까지만.
 - **설치는 사용자 환경을 바꾸므로** 에이전트가 임의로 실행하지 말 것 — `.vsix` 생성까지만 하고 설치 여부는 물어본다.
-- **`.vsix`에 들어가는 건 10개 파일뿐** — `extension.js`, `package.json`, `readme.md`, `LICENSE.txt`, `media/cplog.svg`, `src/*.js` 3개. `test/`·`claude.md`·`PLAN.md`·`.omc/`는 `.vscodeignore`로 제외된다.
+- **`.vsix`에 들어가는 건 11개 파일뿐** — `extension.js`, `package.json`, `readme.md`, `changelog.md`, `LICENSE.txt`, `media/cplog.svg`, `src/*.js` 3개. `test/`·`claude.md`·`PLAN.md`·`.omc/`는 `.vscodeignore`로 제외된다.
 
 ## 🚧 다음 작업 / 범위 밖
 **다음 작업 후보**
