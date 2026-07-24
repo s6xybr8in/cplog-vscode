@@ -103,11 +103,21 @@ counts {"total":42,"todo":21,"done":21,"reviewDue":2}  flat:false
 
 ## 📦 배포 상태
 - **원격 리포 공개 완료** (2026-07-24) — <https://github.com/s6xybr8in/cplog-vscode> (public, 기본 브랜치 `main`). `origin/main`에 3개 커밋 푸시됨. `package.json`의 `repository.url`과 실제 리포 주소가 일치한다.
-- **최신 릴리스 v0.1.1** (2026-07-24) — <https://github.com/s6xybr8in/cplog-vscode/releases>. v0.1.0(첫 릴리스)과 v0.1.1(문서만 갱신, 코드 동일) 둘 다 살아 있다.
+- **최신 릴리스 v0.1.2** (2026-07-24) — <https://github.com/s6xybr8in/cplog-vscode/releases>. v0.1.0(첫 릴리스) / v0.1.1(문서 보강) / v0.1.2(아이콘 교체) 셋 다 살아 있다.
 - **릴리스 절차**: `package.json` 버전 ↑ → `npm install --package-lock-only`(락파일 동기화) → `CHANGELOG.md` 항목 추가 → `npm test` → `npm run package` → `gh release create vX.Y.Z cplog-vscode-X.Y.Z.vsix`. README 안의 `.vsix` 파일명도 같이 바꿔야 한다.
-- **Marketplace 미퍼블리시** — publisher 계정이 필요해 `.vsix` 배포까지만.
 - **설치는 사용자 환경을 바꾸므로** 에이전트가 임의로 실행하지 말 것 — `.vsix` 생성까지만 하고 설치 여부는 물어본다.
-- **`.vsix`에 들어가는 건 11개 파일뿐** — `extension.js`, `package.json`, `readme.md`, `changelog.md`, `LICENSE.txt`, `media/cplog.svg`, `src/*.js` 3개. `test/`·`claude.md`·`PLAN.md`·`.omc/`는 `.vscodeignore`로 제외된다.
+- **`.vsix`에 들어가는 건 12개 파일뿐** — `extension.js`, `package.json`, `readme.md`, `changelog.md`, `LICENSE.txt`, `media/cplog.svg`, `media/icon.png`, `src/*.js` 3개. `test/`·`claude.md`·`PLAN.md`·`.omc/`는 `.vscodeignore`로 제외된다.
+
+### Marketplace 퍼블리시 (진행 중, 사용자 대기)
+사용자가 요청해 **범위 안으로 들어왔다.** 패키지 쪽 준비는 끝났고, 남은 건 브라우저 로그인이 필요해 에이전트가 못 하는 두 단계뿐이다.
+
+1. publisher 계정 생성 — <https://marketplace.visualstudio.com/manage/createpublisher>, ID는 `package.json`의 `publisher` 값과 **똑같이 `s6xybr8in`**이어야 한다.
+2. Azure DevOps PAT — <https://dev.azure.com> → User settings → Personal access tokens. **Organization을 반드시 `All accessible organizations`로** (특정 org를 고르면 퍼블리시가 `401 Unauthorized`로 실패하는 가장 흔한 함정), Scope는 `Marketplace → Manage`.
+3. 그 뒤: `npx vsce login s6xybr8in` (또는 `$env:VSCE_PAT`) → `npx vsce publish`.
+
+현재 상태: `VSCE_PAT` 미설정, `vsce ls-publishers` 비어 있음.
+
+> **아이콘 주의**: v0.1.2 이전의 `media/cplog.svg`와 algonote `build/icon.png`는 둘 다 **GitHub 옥토캣**이었다(claude.md가 "CP-Log 로고"라고 잘못 적어뒀었다). 남의 로고를 제품 아이콘으로 쓰면 GitHub 로고 정책 위반이고 공식 확장으로 오해될 수 있어 체크리스트 아이콘으로 교체했다. **algonote에서 아이콘을 다시 가져오지 말 것.** 마켓플레이스는 SVG를 거부하므로 PNG(`media/icon.png`, 256×256)가 별도로 필요하다. 재생성 스크립트는 없고, 배경 그라데이션은 `#2AB4AB → #1E8E86`이다.
 
 ## 🚧 다음 작업 / 범위 밖
 **다음 작업 후보**
@@ -116,5 +126,6 @@ counts {"total":42,"todo":21,"done":21,"reviewDue":2}  flat:false
 
 **명시적 범위 밖**
 - 상태 변경·문제 추가 등 **쓰기** (위 기술 제약 참고)
-- Marketplace 퍼블리시
 - 노트 열람·편집 (이 익스텐션은 To Solve 목록만 다룬다)
+
+> Marketplace 퍼블리시는 2026-07-24에 사용자 요청으로 **범위 밖에서 빠졌다** — 위 "Marketplace 퍼블리시" 절 참고.
