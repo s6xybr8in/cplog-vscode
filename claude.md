@@ -85,6 +85,20 @@ npm run package          # cplog-vscode-0.1.0.vsix 생성
 
 `F5`로 확장 개발 호스트를 띄워 수동 확인 가능(`.vscode/launch.json`).
 
+### 실데이터 대조 (2026-07-24)
+실제 `s6xybr8in/cplog-data`(private)의 `problems.json`을 `buildTree`에 그대로 먹여 VS Code 없이 트리를 재현했고, 데이터 계약이 어긋나지 않음을 확인했다. 다음 세션에서 다시 대조할 기준선:
+
+```
+counts {"total":42,"todo":21,"done":21,"reviewDue":2}  flat:false
+섹션 6: 업솔빙(0/3) · 자료구조(0/7) · asdf(0/1) · DP연습(7/9) · Knapsack(3/9) · 그룹 없음
+숨겨진(전부 해결) 그룹 3: 좌표변환, Closet pairs, z_Done
+정규화 42/42 (버린 항목 0) · URL 없는 문제 1건
+```
+
+- 실데이터 필드는 `name, url, platform, difficulty, tags, status, reviewAt, id, createdAt, group` — **`solvedAt`은 실제로 존재하지 않는다.** 관대한 파싱이 `null`로 채워 넘어간다(계약 문서의 필드 목록이 앱 코드 기준이라 실데이터보다 넓음).
+- 그룹 정렬은 한글(업솔빙 < 자료구조) → 라틴(asdf < DP연습 < Knapsack) 순. `tree.js`가 예고한 ko-KR 로케일 동작 그대로다.
+- **복습 도래 2건이 둘 다 `done`이고 전부 해결된 `z_Done` 그룹**이라 트리에는 안 뜨고 상태바에만 잡힌다. 노란 `bell-dot` 아이콘을 눈으로 보려면 `showDone`을 켜야 한다.
+
 > **Windows 함정**: 3단계가 `Code is currently being updated`로 실패하면 VS Code 업데이트 설치 프로그램(`CodeSetup-*.exe`)이 떠 있는 것이다. 전역 뮤텍스를 잡고 있어 테스트용 VS Code도 뜨지 못한다 — VS Code를 모두 닫아 업데이트를 끝낸 뒤 재실행.
 
 ## 📦 배포 상태
@@ -94,7 +108,7 @@ npm run package          # cplog-vscode-0.1.0.vsix 생성
 
 ## 🚧 다음 작업 / 범위 밖
 **다음 작업 후보**
-- 실데이터 확인 — 실제 `cplog-data`에 PAT을 물려 앱과 같은 순서로 뜨는지 다크/라이트 스크린샷
+- 실데이터 UI 확인 — 데이터 계약은 위 "실데이터 대조"로 검증됐고, **남은 건 실제 화면**(F5 확장 개발 호스트에 읽기 전용 PAT을 물려 다크/라이트 스크린샷). PAT 발급이 필요해 에이전트가 대신 못 한다.
 - 릴리스 — `.vsix`를 GitHub Releases에 올려 `code --install-extension`으로 받게 하기
 
 **명시적 범위 밖**
