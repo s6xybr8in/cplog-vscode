@@ -2,7 +2,7 @@
   "name": "cplog-vscode",
   "displayName": "CP-Log To Solve",
   "description": "CP-Log의 To Solve 목록을 VS Code 사이드바에서 봅니다",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "s6xybr8in",
   "license": "MIT",
   "repository": {

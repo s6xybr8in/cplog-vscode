@@ -51,18 +51,18 @@ CP-LOG / TO SOLVE
 
 아직 마켓플레이스에 올리지 않았습니다. `.vsix`로 설치합니다.
 
-[Releases](https://github.com/s6xybr8in/cplog-vscode/releases/latest)에서 `cplog-vscode-0.1.0.vsix`를 받아서:
+[Releases](https://github.com/s6xybr8in/cplog-vscode/releases/latest)에서 `cplog-vscode-0.1.1.vsix`를 받아서:
 
 ```bash
-code --install-extension cplog-vscode-0.1.0.vsix
+code --install-extension cplog-vscode-0.1.1.vsix
 ```
 
 소스에서 직접 빌드하려면:
 
 ```bash
 npm install
-npm run package          # cplog-vscode-0.1.0.vsix 생성
-code --install-extension cplog-vscode-0.1.0.vsix
+npm run package          # cplog-vscode-0.1.1.vsix 생성
+code --install-extension cplog-vscode-0.1.1.vsix
 ```
 
 ## 설정
