@@ -23,6 +23,7 @@ cplog-vscode/
   extension.js        # activate() — 상태 관리·명령 등록·상태바·자동 새로고침 타이머
   src/dataRepo.js     # GitHub Contents API 클라이언트 (fetch → base64 디코드 → JSON.parse)
   src/tree.js         # 순수 함수: 문제 배열 → 섹션/행 구조 (vscode 모듈 미참조 = 단위 테스트 대상)
+  src/fileName.js     # 순수 함수: 문제 이름 → 파일명/폴더 세그먼트 (vscode 모듈 미참조)
   src/provider.js     # TreeDataProvider — tree.js 결과를 TreeItem으로 변환
   media/cplog.svg     # 액티비티 바 아이콘 (algonote build/icon.png와 같은 로고, 단색 SVG)
   test/               # 단위(vscode 스텁) + 통합(@vscode/test-electron)
@@ -32,7 +33,7 @@ cplog-vscode/
 
 **책임 분리**: 데이터 로딩은 `extension.js`, "현재 상태를 어떻게 보여줄지"만 `provider.js`. `provider`는 `getState` 콜백을 받아 렌더만 한다.
 
-## ✅ 완료된 기능 (v0.1.0, 2026-07-24)
+## ✅ 완료된 기능 (v0.2.0 기준)
 1. **그룹(문제집)별 접이식 트리** — 그룹 노드 label=그룹 이름, description=`3/8 해결`(진행도는 **숨긴 done까지 포함**해 계산), 기본 펼침. 이름 있는 그룹이 하나도 없으면 섹션 없이 평면 목록. **전부 해결된 그룹은 목록에서 사라진다**(showDone이면 다시 보임).
 2. **문제 노드** — label=`name`, description=`Codeforces · 1600`, tooltip=MarkdownString(플랫폼·난이도·상태·문제집·태그·복습 경고·문제 열기 링크, `escapeMd`로 마크다운 이스케이프). 아이콘: done `check`(charts.green) / **복습 기한 도래** `bell-dot`(charts.yellow) / todo `circle-outline`. **URL 없는 문제는 `command`를 아예 붙이지 않는다**(클릭해도 열 게 없음).
 3. **상태바** — `$(list-unordered) To Solve 12` + 복습 도래 시 `$(bell-dot) 복습 3`, 클릭 → `cplogToSolve.focus`. 툴팁에 미해결/해결/복습 대기 전부.
@@ -41,7 +42,8 @@ cplog-vscode/
 6. **설정 마법사 + SecretStorage** — `cplog.setup`(사용자명 → 데이터 리포 → PAT 3단계, 각 단계 Esc로 취소 가능), `cplog.setToken`(PAT만 재설정, 빈 값 입력 시 삭제). **PAT은 `context.secrets`에만 저장**(키 `cplog.pat`).
 7. **자동 새로고침** — `cplog.refreshMinutes`(기본 10분, `0`이면 수동만). `onDidChangeConfiguration`에서 주기 변경 시 타이머 재무장(`rearmTimer`), username/dataRepo/dataBranch 변경 시 즉시 refetch, showDone 변경 시 렌더만.
 8. **빈 상태(`viewsWelcome`)** — 미설정(`!cplog.configured` 컨텍스트 키)이면 오류 대신 "[초기 설정]" 버튼. 설정 전에는 `getChildren()`이 **빈 배열**을 돌려줘야 viewsWelcome이 뜬다(빈 상태 메시지를 넣으면 안 됨).
-9. **명령 6종** — `cplog.refresh`·`cplog.toggleShowDone`(뷰 타이틀 아이콘) / `cplog.setup`·`cplog.setToken`(팔레트) / `cplog.openProblem`·`cplog.copyProblemName`(노드 클릭·우클릭, `commandPalette`에서 `when: false`로 숨김).
+9. **명령 6종** — `cplog.refresh`·`cplog.toggleShowDone`(뷰 타이틀 아이콘) / `cplog.setup`·`cplog.setToken`(팔레트) / `cplog.openProblem`·`cplog.createProblemFile`(노드 클릭·우클릭, `commandPalette`에서 `when: false`로 숨김).
+10. **풀이 파일 만들기** (v0.2.0) — 우클릭 → `cplog.createProblemFile`. 문제 이름으로 `<워크스페이스>/[fileDirectory]/<이름>.<ext>`를 만들고 `showTextDocument`로 연다 (`CF 1850A` → `CF_1850A.cpp`). 확장자 `cplog.fileExtension`(기본 `cpp`), 폴더 `cplog.fileDirectory`(기본 루트, 없으면 `createDirectory`로 생성). **이미 있으면 덮어쓰지 않고 열기만 한다** — 풀던 코드를 날리면 안 된다. 파일명 정리는 `src/fileName.js`: Windows 금지 문자·제어문자 → 공백 → 연속 공백 접기 → 80자 절단 → 끝의 점·공백 제거 → **남은 공백을 `_`로** (셸에서 따옴표 없이 다루려고, 사용자 요청) → 예약 장치 이름 `CON` → `_CON`, 최종적으로 빈 이름이면 `problem`. **순서가 중요하다** — 밑줄 치환을 앞으로 당기면 끝의 공백이 `_`로 남는다. `fileDirectory`의 `..`는 버려 워크스페이스 밖으로 못 나간다. 만드는 파일은 **빈 파일**(템플릿 기능 없음). `v0.1.x`의 `cplog.copyProblemName`은 이 명령으로 **교체됐다**.
 
 ## 🔗 상위 리포와의 데이터 계약 (★가장 중요)
 **algonote(CP-Log 웹앱)가 스키마의 주인이고, 이 리포는 규칙을 코드로 복제해 갖고 있다.** import할 수 없으므로 앱이 바꾸면 **조용히 어긋난다** — algonote `claude.md`의 "🔗 연동 리포" 섹션에도 교차 참조가 걸려 있다.
@@ -69,18 +71,20 @@ cplog-vscode/
 - **base64 디코드는 `Buffer.from(..., 'base64').toString('utf8')`** — 웹앱의 `fromBase64`는 브라우저 `atob` 기반이라 재사용할 수 없다. GitHub Contents API는 base64에 줄바꿈을 섞어 주므로 `.replace(/\s/g, '')` 선행 필수. 문제 이름에 한글이 있어 UTF-8 디코드가 아니면 깨진다.
 - **파싱은 관대하게** — `normalizeProblems`는 배열이 아니거나 필드가 빠지거나 모르는 필드가 와도 **절대 throw하지 않는다**. 앱이 스키마를 바꿔도 목록이 통째로 죽지 않게 하는 안전장치이므로, 엄격한 검증으로 바꾸지 말 것.
 - **PAT을 `settings.json`에 넣지 말 것** — 커밋되거나 Settings Sync로 새어나간다. 반드시 `context.secrets`(SecretStorage). 읽기만 하므로 사용자에겐 **Contents: Read-only 파인그레인드 PAT**을 새로 발급하도록 안내한다(앱의 읽기/쓰기 토큰 재사용 금지).
-- **`src/tree.js`는 `vscode` 모듈을 import하지 않는다** — 이 경계가 깨지면 VS Code 없이 도는 단위 테스트가 전부 무너진다.
+- **`src/tree.js`·`src/fileName.js`는 `vscode` 모듈을 import하지 않는다** — 이 경계가 깨지면 VS Code 없이 도는 단위 테스트가 전부 무너진다.
+- **`src/fileName.js`의 금지 문자 정규식에 제어문자를 리터럴로 넣지 말 것** — `\x00-\x1f`처럼 이스케이프로 쓴다. 소스에 진짜 NUL이 박히면 눈에 안 보이면서 diff·에디터를 망가뜨린다.
+- **`refresh()`에서 `state`를 `await` 너머로 다시 읽지 말 것** — 설정 여부는 이번 `cfg`로 계산한 **지역 변수**로 판단한다. `state.configured`를 `await executeCommand('setContext', ...)` 뒤에 다시 읽으면, 그 사이 값이 바뀌었을 때(설정 마법사 완료, 통합 테스트의 상태 주입) 토큰 없이 `fetchProblems`로 들어가 엉뚱한 `NO_TOKEN` 오류가 `state.error`에 남는다. 실제로 통합 테스트 마지막 케이스를 오염시켜 잡아냈다(2026-07-27).
 - **전제**: 앱에서 데이터 리포 동기화가 **켜져 있어야** 한다. 꺼져 있으면 원격에 `problems.json`이 없어 404 → 목록이 빈다.
 
 ## 🧪 검증
 ```bash
-npm test                 # 단위 — VS Code 불필요, 41건 통과 (2026-07-24 확인)
-npm run test:integration # 통합 — 실제 VS Code 내려받아 확장 호스트에서 14건
-npm run package          # cplog-vscode-0.1.0.vsix 생성
+npm test                 # 단위 — VS Code 불필요, 53건 통과 (2026-07-27 확인)
+npm run test:integration # 통합 — 실제 VS Code 내려받아 확장 호스트에서 14건 통과 (2026-07-27 확인)
+npm run package          # cplog-vscode-0.2.0.vsix 생성
 ```
 테스트는 세 겹이다.
-1. **순수 로직** (`test/tree.test.mjs`) — 정렬·그룹·필터·방어적 파싱·복습 경계(`now === reviewAt`)
-2. **확장 실행** (`test/extension.test.mjs`, `test/dataRepo.test.mjs`) — `test/vscodeStub.mjs`로 `vscode` 모듈을 스텁해 `activate()`를 실제로 돌린다. VS Code를 띄우지 않고 API 오용·명령 등록·시크릿 저장·캐시 동작을 잡는다. `fetch` 스텁으로 요청 URL·헤더(Bearer/Accept, **`X-GitHub-Api-Version` 부재**)·한글 base64 왕복·오류 매핑 검증
+1. **순수 로직** (`test/tree.test.mjs`, `test/fileName.test.mjs`) — 정렬·그룹·필터·방어적 파싱·복습 경계(`now === reviewAt`), 파일명 정리
+2. **확장 실행** (`test/extension.test.mjs`, `test/dataRepo.test.mjs`) — `test/vscodeStub.mjs`로 `vscode` 모듈을 스텁해 `activate()`를 실제로 돌린다. VS Code를 띄우지 않고 API 오용·명령 등록·시크릿 저장·캐시·파일 생성(인메모리 `workspace.fs` 스텁) 동작을 잡는다. `fetch` 스텁으로 요청 URL·헤더(Bearer/Accept, **`X-GitHub-Api-Version` 부재**)·한글 base64 왕복·오류 매핑 검증
 3. **확장 호스트** (`test/integration/index.js`) — 실제 VS Code에서 `activate()`가 노출한 `{_state, _provider, _statusBar, _refresh}` 내부 API에 상태를 주입해 네트워크 없이 트리·상태바 렌더 검증
 
 `F5`로 확장 개발 호스트를 띄워 수동 확인 가능(`.vscode/launch.json`).
@@ -104,9 +108,10 @@ counts {"total":42,"todo":21,"done":21,"reviewDue":2}  flat:false
 ## 📦 배포 상태
 - **원격 리포 공개 완료** (2026-07-24) — <https://github.com/s6xybr8in/cplog-vscode> (public, 기본 브랜치 `main`). `origin/main`에 3개 커밋 푸시됨. `package.json`의 `repository.url`과 실제 리포 주소가 일치한다.
 - **최신 릴리스 v0.1.2** (2026-07-24) — <https://github.com/s6xybr8in/cplog-vscode/releases>. v0.1.0(첫 릴리스) / v0.1.1(문서 보강) / v0.1.2(아이콘 교체) 셋 다 살아 있다.
+- **v0.2.0(풀이 파일 만들기)은 코드·문서·버전까지 준비됐지만 아직 릴리스하지 않았다** — 남은 건 `npm run package` → `gh release create v0.2.0` 뿐이고, 사용자 확인을 기다린다.
 - **릴리스 절차**: `package.json` 버전 ↑ → `npm install --package-lock-only`(락파일 동기화) → `CHANGELOG.md` 항목 추가 → `npm test` → `npm run package` → `gh release create vX.Y.Z cplog-vscode-X.Y.Z.vsix`. README 안의 `.vsix` 파일명도 같이 바꿔야 한다.
 - **설치는 사용자 환경을 바꾸므로** 에이전트가 임의로 실행하지 말 것 — `.vsix` 생성까지만 하고 설치 여부는 물어본다.
-- **`.vsix`에 들어가는 건 12개 파일뿐** — `extension.js`, `package.json`, `readme.md`, `changelog.md`, `LICENSE.txt`, `media/cplog.svg`, `media/icon.png`, `src/*.js` 3개. `test/`·`claude.md`·`PLAN.md`·`.omc/`는 `.vscodeignore`로 제외된다.
+- **`.vsix`에 들어가는 건 13개 파일뿐** — `extension.js`, `package.json`, `readme.md`, `changelog.md`, `LICENSE.txt`, `media/cplog.svg`, `media/icon.png`, `src/*.js` 4개. `test/`·`claude.md`·`PLAN.md`·`.omc/`는 `.vscodeignore`로 제외된다.
 
 ### Marketplace 퍼블리시 (진행 중, 사용자 대기)
 사용자가 요청해 **범위 안으로 들어왔다.** 패키지 쪽 준비는 끝났고, 남은 건 브라우저 로그인이 필요해 에이전트가 못 하는 두 단계뿐이다.

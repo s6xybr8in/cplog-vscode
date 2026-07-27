@@ -34,7 +34,8 @@ CP-LOG / TO SOLVE
 ## 기능
 
 - **앱과 같은 정렬 순서** — 미해결이 위, 같은 상태 안에서는 최신 등록순. 웹에서 보던 순서 그대로라 눈이 헷갈리지 않습니다
-- **문제 클릭 → 브라우저에서 바로 열기**, 우클릭 → 이름 복사
+- **문제 클릭 → 브라우저에서 바로 열기**
+- **우클릭 → 풀이 파일 만들기** — 문제 이름으로 파일을 만들고 바로 엽니다 (공백은 `_`, 기본 `.cpp`. 확장자·폴더는 설정으로 바꿉니다)
 - **자동 새로고침** — 기본 10분, 끌 수도 있습니다
 - **시작하자마자 목록이 보입니다** — 마지막에 불러온 목록을 캐시해두므로, VS Code를 켜고 네트워크 응답을 기다릴 필요가 없습니다
 - **오류가 나도 목록이 사라지지 않습니다** — 캐시된 목록을 그대로 두고 맨 위에 오류 한 줄만 추가합니다
@@ -51,18 +52,18 @@ CP-LOG / TO SOLVE
 
 아직 마켓플레이스에 올리지 않았습니다. `.vsix`로 설치합니다.
 
-[Releases](https://github.com/s6xybr8in/cplog-vscode/releases/latest)에서 `cplog-vscode-0.1.2.vsix`를 받아서:
+[Releases](https://github.com/s6xybr8in/cplog-vscode/releases/latest)에서 `cplog-vscode-0.2.0.vsix`를 받아서:
 
 ```bash
-code --install-extension cplog-vscode-0.1.2.vsix
+code --install-extension cplog-vscode-0.2.0.vsix
 ```
 
 소스에서 직접 빌드하려면:
 
 ```bash
 npm install
-npm run package          # cplog-vscode-0.1.2.vsix 생성
-code --install-extension cplog-vscode-0.1.2.vsix
+npm run package          # cplog-vscode-0.2.0.vsix 생성
+code --install-extension cplog-vscode-0.2.0.vsix
 ```
 
 ## 설정
@@ -94,8 +95,25 @@ code --install-extension cplog-vscode-0.1.2.vsix
 | `cplog.dataBranch` | `"main"` | 브랜치 |
 | `cplog.showDone` | `false` | 해결한 문제도 표시 |
 | `cplog.refreshMinutes` | `10` | 자동 새로고침 주기(분), `0`이면 수동만 |
+| `cplog.fileExtension` | `"cpp"` | 풀이 파일 확장자 (`cpp`·`.cpp` 둘 다 됨) |
+| `cplog.fileDirectory` | `""` | 풀이 파일을 만들 폴더 (워크스페이스 루트 기준 상대 경로) |
 
 사용자명·데이터 리포·브랜치를 바꾸면 즉시 다시 불러옵니다. 새로고침 주기를 바꾸면 타이머가 새 주기로 다시 걸립니다.
+
+## 풀이 파일 만들기
+
+문제를 **우클릭 → CP-Log: 문제 파일 만들기**를 누르면 문제 이름으로 파일을 만들고 에디터에서 엽니다. **공백은 밑줄(`_`)로 바뀝니다** — 셸에서 따옴표 없이 컴파일·실행할 수 있게.
+
+```
+CF 1850A          →  <워크스페이스>/CF_1850A.cpp
+BOJ 1000: A+B     →  <워크스페이스>/BOJ_1000_A+B.cpp
+```
+
+- 확장자는 `cplog.fileExtension`(기본 `cpp`), 위치는 `cplog.fileDirectory`(기본: 워크스페이스 루트)로 정합니다. 폴더가 없으면 만듭니다
+- **같은 이름의 파일이 이미 있으면 덮어쓰지 않고 열기만 합니다** — 풀던 코드가 날아가지 않습니다
+- 파일명에 쓸 수 없는 글자(`: / \ * ? " < > |`)도 밑줄이 되고, 끝의 점·공백과 Windows 예약 장치 이름(`CON` 등)도 정리합니다
+- 만들어지는 파일은 **빈 파일**입니다. 템플릿을 쓰려면 VS Code 스니펫이나 파일 템플릿 익스텐션을 함께 쓰세요
+- 폴더를 열지 않은 창에서는 만들 위치가 없어 오류를 알립니다
 
 ## 명령
 
@@ -106,7 +124,7 @@ code --install-extension cplog-vscode-0.1.2.vsix
 | **CP-Log: 초기 설정** | 목록 `⋯` 메뉴, 명령 팔레트 |
 | **CP-Log: GitHub 토큰 설정** | 명령 팔레트 |
 | **CP-Log: 문제 열기** | 문제 클릭 또는 우클릭 |
-| **CP-Log: 문제 이름 복사** | 문제 우클릭 |
+| **CP-Log: 문제 파일 만들기** | 문제 우클릭 |
 
 상태바의 `☰ To Solve n`을 누르면 목록으로 이동합니다.
 
@@ -166,7 +184,7 @@ npm run test:integration # 실제 VS Code를 내려받아 확장 호스트에서
 
 테스트는 세 겹입니다.
 
-1. **순수 로직** (`test/tree.test.mjs`) — 정렬·그룹·필터·방어적 파싱
+1. **순수 로직** (`test/tree.test.mjs`, `test/fileName.test.mjs`) — 정렬·그룹·필터·방어적 파싱, 파일명 정리
 2. **확장 실행** (`test/extension.test.mjs`, `test/dataRepo.test.mjs`) — `vscode` 모듈을 스텁해서 `activate()`와 트리 프로바이더를 실제로 돌린다. VS Code를 띄우지 않고도 API 오용·명령 등록·시크릿 저장·캐시 동작을 잡는다
 3. **확장 호스트** (`test/integration/`) — 실제 VS Code에서 매니페스트가 로드되는지까지 확인
 

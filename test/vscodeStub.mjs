@@ -2,16 +2,21 @@
 // 실제로 실행해보기 위해, require('vscode')를 가로채 최소 구현을 돌려준다.
 import Module from 'node:module'
 
+const makeUri = (path) => ({ scheme: 'file', path, fsPath: path, toString: () => path, _raw: path })
+
 export function installVscodeStub() {
   const state = {
     commands: new Map(),
     context: new Map(), // setContext로 설정된 키
     opened: [],
-    clipboard: '',
     errors: [],
     inputQueue: [],
     settings: new Map(),
     configListeners: [],
+    files: new Map(), // 인메모리 파일 시스템: 경로 → Uint8Array
+    dirs: new Set(),
+    shown: [], // showTextDocument로 열린 경로
+    workspaceFolders: [{ uri: makeUri('/ws'), name: 'ws', index: 0 }],
   }
 
   class TreeItem {
@@ -71,19 +76,37 @@ export function installVscodeStub() {
     TreeItemCollapsibleState: { None: 0, Collapsed: 1, Expanded: 2 },
     StatusBarAlignment: { Left: 1, Right: 2 },
     ConfigurationTarget: { Global: 1 },
-    Uri: { parse: (s) => ({ toString: () => s, _raw: s }) },
+    Uri: {
+      parse: (s) => ({ toString: () => s, _raw: s }),
+      file: makeUri,
+      joinPath: (base, ...segments) => makeUri([base.path.replace(/\/$/, ''), ...segments].join('/')),
+    },
     window: {
       createTreeView: () => ({ description: undefined, dispose() {} }),
       createStatusBarItem: () => ({ text: '', tooltip: '', command: '', show() {}, dispose() {} }),
       showInputBox: async () => state.inputQueue.shift(),
       showErrorMessage: async (m) => state.errors.push(m),
       setStatusBarMessage: () => ({ dispose() {} }),
+      showTextDocument: async (doc) => state.shown.push(doc.uri.path),
     },
     workspace: {
       getConfiguration: (section) => configFor(section),
       onDidChangeConfiguration: (fn) => {
         state.configListeners.push(fn)
         return { dispose: () => {} }
+      },
+      get workspaceFolders() {
+        return state.workspaceFolders
+      },
+      openTextDocument: async (uri) => ({ uri }),
+      fs: {
+        stat: async (uri) => {
+          if (state.files.has(uri.path)) return { type: 1, size: state.files.get(uri.path).length }
+          if (state.dirs.has(uri.path)) return { type: 2, size: 0 }
+          throw new Error(`FileNotFound: ${uri.path}`)
+        },
+        writeFile: async (uri, content) => state.files.set(uri.path, content),
+        createDirectory: async (uri) => state.dirs.add(uri.path),
       },
     },
     commands: {
@@ -103,7 +126,6 @@ export function installVscodeStub() {
     },
     env: {
       openExternal: async (uri) => state.opened.push(uri._raw ?? String(uri)),
-      clipboard: { writeText: async (t) => (state.clipboard = t) },
     },
     extensions: { getExtension: () => undefined },
   }

@@ -4,7 +4,9 @@
 test/**
 node_modules/**
 PLAN.md
+# 대소문자 둘 다 — Windows에서 파일명 케이스가 바뀌어도 패키지에 새지 않게
 claude.md
+CLAUDE.md
 .gitignore
 .vscodeignore
 *.vsix

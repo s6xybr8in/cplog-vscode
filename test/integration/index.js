@@ -36,7 +36,7 @@ async function run() {
       'cplog.setToken',
       'cplog.toggleShowDone',
       'cplog.openProblem',
-      'cplog.copyProblemName',
+      'cplog.createProblemFile',
     ]) {
       assert.ok(all.includes(id), `${id} 미등록`)
     }

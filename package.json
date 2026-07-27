@@ -2,7 +2,7 @@
   "name": "cplog-vscode",
   "displayName": "CP-Log To Solve",
   "description": "CP-Log의 To Solve 목록을 VS Code 사이드바에서 봅니다",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "publisher": "s6xybr8in",
   "license": "MIT",
   "repository": {
@@ -85,15 +85,16 @@
         "category": "CP-Log"
       },
       {
-        "command": "cplog.copyProblemName",
-        "title": "문제 이름 복사",
-        "category": "CP-Log"
+        "command": "cplog.createProblemFile",
+        "title": "문제 파일 만들기",
+        "category": "CP-Log",
+        "icon": "$(new-file)"
       }
     ],
     "menus": {
       "commandPalette": [
         { "command": "cplog.openProblem", "when": "false" },
-        { "command": "cplog.copyProblemName", "when": "false" }
+        { "command": "cplog.createProblemFile", "when": "false" }
       ],
       "view/title": [
         { "command": "cplog.toggleShowDone", "when": "view == cplogToSolve", "group": "navigation@1" },
@@ -102,7 +103,7 @@
       ],
       "view/item/context": [
         { "command": "cplog.openProblem", "when": "view == cplogToSolve && viewItem == cplogProblem", "group": "inline" },
-        { "command": "cplog.copyProblemName", "when": "view == cplogToSolve && viewItem == cplogProblem" }
+        { "command": "cplog.createProblemFile", "when": "view == cplogToSolve && viewItem == cplogProblem" }
       ]
     },
     "configuration": {
@@ -133,6 +134,16 @@
           "default": 10,
           "minimum": 0,
           "markdownDescription": "자동 새로고침 주기(분). `0`이면 수동으로만 새로고침합니다."
+        },
+        "cplog.fileExtension": {
+          "type": "string",
+          "default": "cpp",
+          "markdownDescription": "**문제 파일 만들기**로 생성할 파일의 확장자. `cpp`·`.cpp` 둘 다 됩니다."
+        },
+        "cplog.fileDirectory": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "문제 파일을 만들 폴더(워크스페이스 루트 기준 상대 경로). 비우면 루트에 만듭니다. 없으면 만들어집니다."
         }
       }
     }

@@ -30,6 +30,10 @@ async function boot({ rows = ROWS, response, secrets = { 'cplog.pat': 'tok' }, g
   env.opened.length = 0
   env.errors.length = 0
   env.configListeners.length = 0
+  env.files.clear()
+  env.dirs.clear()
+  env.shown.length = 0
+  env.workspaceFolders = [{ uri: vscode.Uri.file('/ws'), name: 'ws', index: 0 }]
   env.settings.clear()
   env.settings.set('cplog.username', 's6xybr8in')
   env.settings.set('cplog.dataRepo', 'cplog-data')
@@ -48,7 +52,7 @@ const labelOf = (i) => (typeof i.label === 'string' ? i.label : i.label?.label)
 
 test('활성화하면 명령이 전부 등록된다', async () => {
   await boot()
-  for (const id of ['cplog.refresh', 'cplog.setup', 'cplog.setToken', 'cplog.toggleShowDone', 'cplog.openProblem', 'cplog.copyProblemName']) {
+  for (const id of ['cplog.refresh', 'cplog.setup', 'cplog.setToken', 'cplog.toggleShowDone', 'cplog.openProblem', 'cplog.createProblemFile']) {
     assert.ok(env.commands.has(id), `${id} 미등록`)
   }
 })
@@ -108,12 +112,46 @@ test('URL 있는 문제만 클릭 명령이 붙고, 명령이 브라우저를 �
   assert.deepEqual(env.opened, ['https://codeforces.com/problemset/problem/1900/C'])
 })
 
-test('이름 복사 명령이 클립보드에 쓴다', async () => {
+// 트리에서 첫 그룹의 첫 문제 노드(= 'CF 1850A')
+const firstProblem = async (api) => (await api._provider.getChildren((await api._provider.getChildren())[0]))[0]
+
+test('문제 파일 만들기가 워크스페이스 루트에 .cpp를 만들고 연다 (공백은 밑줄)', async () => {
   const { api } = await boot()
-  const groups = await api._provider.getChildren()
-  const item = (await api._provider.getChildren(groups[0]))[0]
-  await vscode.commands.executeCommand('cplog.copyProblemName', item)
-  assert.equal(env.clipboard, 'CF 1850A')
+  await vscode.commands.executeCommand('cplog.createProblemFile', await firstProblem(api))
+  assert.deepEqual([...env.files.keys()], ['/ws/CF_1850A.cpp'])
+  assert.deepEqual(env.shown, ['/ws/CF_1850A.cpp'])
+})
+
+test('fileExtension·fileDirectory 설정을 따르고 폴더를 만든다', async () => {
+  const { api } = await boot({ settings: { 'cplog.fileExtension': '.py', 'cplog.fileDirectory': 'solutions/cf' } })
+  await vscode.commands.executeCommand('cplog.createProblemFile', await firstProblem(api))
+  assert.deepEqual([...env.files.keys()], ['/ws/solutions/cf/CF_1850A.py'])
+  assert.ok(env.dirs.has('/ws/solutions/cf'))
+})
+
+test('이미 있는 파일은 덮어쓰지 않고 열기만 한다', async () => {
+  const { api } = await boot()
+  const kept = new TextEncoder().encode('int main() {}')
+  env.files.set('/ws/CF_1850A.cpp', kept)
+  await vscode.commands.executeCommand('cplog.createProblemFile', await firstProblem(api))
+  assert.equal(env.files.get('/ws/CF_1850A.cpp'), kept, '풀던 코드를 날리면 안 된다')
+  assert.deepEqual(env.shown, ['/ws/CF_1850A.cpp'])
+})
+
+test('파일명에 쓸 수 없는 글자는 정리한다', async () => {
+  const { api } = await boot({ rows: [{ id: 'z', name: 'BOJ 1000: A/B?', status: 'todo', createdAt: 1 }] })
+  const items = await api._provider.getChildren()
+  await vscode.commands.executeCommand('cplog.createProblemFile', items[0])
+  assert.deepEqual([...env.files.keys()], ['/ws/BOJ_1000_A_B.cpp'])
+})
+
+test('열린 폴더가 없으면 파일을 만들지 않고 오류를 알린다', async () => {
+  const { api } = await boot()
+  const item = await firstProblem(api)
+  env.workspaceFolders = []
+  await vscode.commands.executeCommand('cplog.createProblemFile', item)
+  assert.equal(env.files.size, 0)
+  assert.match(env.errors.at(-1), /폴더/)
 })
 
 test('showDone 토글이 설정에 반영되고 목록이 늘어난다', async () => {

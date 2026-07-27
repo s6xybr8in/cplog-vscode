@@ -2,6 +2,7 @@ const vscode = require('vscode')
 const { ToSolveProvider, ProblemItem } = require('./src/provider')
 const { fetchProblems } = require('./src/dataRepo')
 const { buildTree } = require('./src/tree')
+const { buildFileName, splitDirectory, DEFAULT_EXTENSION } = require('./src/fileName')
 
 const SECRET_PAT = 'cplog.pat'
 const CACHE_KEY = 'cplog.cache'
@@ -45,10 +46,14 @@ function activate(context) {
   const refresh = async ({ silent = true } = {}) => {
     if (state.loading) return
     const cfg = await readConfig()
-    // 설정 전에는 오류 대신 viewsWelcome(초기 설정 버튼)을 보여준다
-    state.configured = !!(cfg.username && cfg.dataRepo && cfg.pat)
-    await vscode.commands.executeCommand('setContext', 'cplog.configured', state.configured)
-    if (!state.configured) {
+    // 설정 전에는 오류 대신 viewsWelcome(초기 설정 버튼)을 보여준다.
+    // 아래 await 사이에 state.configured가 바뀔 수 있으므로(설정 마법사 완료 등)
+    // 판단은 이번 cfg로 계산한 지역 변수로만 한다 — 공유 상태를 다시 읽으면
+    // 토큰 없이 fetch로 들어가 엉뚱한 NO_TOKEN 오류가 남는다.
+    const configured = !!(cfg.username && cfg.dataRepo && cfg.pat)
+    state.configured = configured
+    await vscode.commands.executeCommand('setContext', 'cplog.configured', configured)
+    if (!configured) {
       state.error = null
       render()
       return
@@ -80,11 +85,39 @@ function activate(context) {
     if (url) vscode.env.openExternal(vscode.Uri.parse(url))
   })
 
-  register('cplog.copyProblemName', async (item) => {
-    const name = item?.problem?.name
-    if (!name) return
-    await vscode.env.clipboard.writeText(name)
-    vscode.window.setStatusBarMessage(`복사됨: ${name}`, 2000)
+  const exists = async (uri) => {
+    try {
+      await vscode.workspace.fs.stat(uri)
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  register('cplog.createProblemFile', async (item) => {
+    const problem = item?.problem
+    if (!problem) return
+    const folder = vscode.workspace.workspaceFolders?.[0]
+    if (!folder) {
+      vscode.window.showErrorMessage('CP-Log: 파일을 만들 폴더가 없습니다. 먼저 작업 폴더를 여세요.')
+      return
+    }
+
+    const segments = splitDirectory(config().get('fileDirectory', ''))
+    const dir = segments.length ? vscode.Uri.joinPath(folder.uri, ...segments) : folder.uri
+    const fileName = buildFileName(problem.name, config().get('fileExtension', DEFAULT_EXTENSION))
+    const uri = vscode.Uri.joinPath(dir, fileName)
+
+    try {
+      // 이미 있으면 덮어쓰지 않고 그대로 연다 — 풀던 코드를 날려선 안 된다
+      if (!(await exists(uri))) {
+        if (segments.length) await vscode.workspace.fs.createDirectory(dir)
+        await vscode.workspace.fs.writeFile(uri, new Uint8Array())
+      }
+      await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(uri))
+    } catch (err) {
+      vscode.window.showErrorMessage(`CP-Log: ${fileName}을(를) 만들지 못했습니다 — ${err.message}`)
+    }
   })
 
   register('cplog.toggleShowDone', async () => {
