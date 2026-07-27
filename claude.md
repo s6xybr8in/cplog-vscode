@@ -107,8 +107,7 @@ counts {"total":42,"todo":21,"done":21,"reviewDue":2}  flat:false
 
 ## 📦 배포 상태
 - **원격 리포 공개 완료** (2026-07-24) — <https://github.com/s6xybr8in/cplog-vscode> (public, 기본 브랜치 `main`). `origin/main`에 3개 커밋 푸시됨. `package.json`의 `repository.url`과 실제 리포 주소가 일치한다.
-- **최신 릴리스 v0.1.2** (2026-07-24) — <https://github.com/s6xybr8in/cplog-vscode/releases>. v0.1.0(첫 릴리스) / v0.1.1(문서 보강) / v0.1.2(아이콘 교체) 셋 다 살아 있다.
-- **v0.2.0(풀이 파일 만들기)은 코드·문서·버전까지 준비됐지만 아직 릴리스하지 않았다** — 남은 건 `npm run package` → `gh release create v0.2.0` 뿐이고, 사용자 확인을 기다린다.
+- **최신 릴리스 v0.2.0** (2026-07-27) — <https://github.com/s6xybr8in/cplog-vscode/releases/tag/v0.2.0>. `.vsix` 첨부 완료, Latest 표시됨. v0.1.0(첫 릴리스) / v0.1.1(문서 보강) / v0.1.2(아이콘 교체) / v0.2.0(풀이 파일 만들기) 넷 다 살아 있다.
 - **릴리스 절차**: `package.json` 버전 ↑ → `npm install --package-lock-only`(락파일 동기화) → `CHANGELOG.md` 항목 추가 → `npm test` → `npm run package` → `gh release create vX.Y.Z cplog-vscode-X.Y.Z.vsix`. README 안의 `.vsix` 파일명도 같이 바꿔야 한다.
 - **설치는 사용자 환경을 바꾸므로** 에이전트가 임의로 실행하지 말 것 — `.vsix` 생성까지만 하고 설치 여부는 물어본다.
 - **`.vsix`에 들어가는 건 13개 파일뿐** — `extension.js`, `package.json`, `readme.md`, `changelog.md`, `LICENSE.txt`, `media/cplog.svg`, `media/icon.png`, `src/*.js` 4개. `test/`·`claude.md`·`PLAN.md`·`.omc/`는 `.vscodeignore`로 제외된다.
